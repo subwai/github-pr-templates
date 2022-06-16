@@ -1,5 +1,5 @@
 const url = new URL(window.location);
-const [, nameWithOwner, branch] = url.pathname.match(/\/(.+)\/compare\/(.+)/);
+const [, nameWithOwner, , branch] = url.pathname.match(/\/(.+)\/compare\/(.+\.\.\.)?(.+)/);
 const defaultTemplate = 'default';
 const project = 'pr-templates';
 const localStoragePath = `${nameWithOwner}:${project}`;
