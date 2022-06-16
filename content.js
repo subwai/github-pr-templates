@@ -1,6 +1,5 @@
 const url = new URL(window.location);
-const [, owner, repo] = url.pathname.split('/');
-const nameWithOwner = [owner, repo].join('/');
+const [, nameWithOwner, branch] = url.pathname.match(/\/(.+)\/compare\/(.+)/);
 const defaultTemplate = 'default';
 const project = 'pr-templates';
 const localStoragePath = `${nameWithOwner}:${project}`;
@@ -22,12 +21,12 @@ const baseName = (path) => {
 };
 
 const fetchGithub = (path) => {
-    return fetch(`${baseURL}/${path}`, {credentials: 'same-origin'})
+    return fetch(`${baseURL}${path}`, {credentials: 'same-origin'})
         .then(res => res.text());
 }
 
 const fetchTemplate = (path) => {
-    return fetchGithub(`/raw/master/.github/${path}`);
+    return fetchGithub(`/raw/${branch}/.github/${path}`);
 };
 
 // business logic
@@ -50,7 +49,7 @@ const fetchDefaultTemplate = () => {
 };
 
 const fetchCustomTemplates = () => {
-    return fetchGithub(`/tree/master/.github/PULL_REQUEST_TEMPLATE`)
+    return fetchGithub(`/tree/${branch}/.github/PULL_REQUEST_TEMPLATE`)
         .then(html => {
             const regex = new RegExp(/href=".+(PULL_REQUEST_TEMPLATE\/.+\.md)"/g);
             const templateUrls = [...html.matchAll(regex)].map(match => match[1]);
