@@ -1,0 +1,116 @@
+<details id="template-selector" class="pr-template-select select-menu details-overlay details-reset">
+    <summary data-view-component="true" class="select-menu-button branch btn-sm btn"><i>Template:</i>
+        <span class="css-truncate css-truncate-target" data-menu-button="" title="">{{default-template}}</span>
+    </summary>
+    <div class="SelectMenu">
+        <div class="SelectMenu-modal">
+            <header class="SelectMenu-header">
+                <span class="SelectMenu-title">Choose a template</span>
+                <button class="SelectMenu-closeButton" type="button" data-toggle-for="template-selector">
+                    <svg aria-label="Close menu"
+                         aria-hidden="false"
+                         role="img"
+                         height="16"
+                         viewBox="0 0 16 16"
+                         width="16"
+                         data-view-component="true"
+                         class="octicon octicon-x">
+                        <path fill-rule="evenodd"
+                              d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path>
+                    </svg>
+                </button>
+            </header>
+
+            <input-demux
+                    data-action="tab-container-change:input-demux#storeInput tab-container-changed:input-demux#updateInput"
+                    data-catalyst="">
+                <div class="SelectMenu-filter">
+                    <input data-target="input-demux.source"
+                           id="context-committish-filter-field-template"
+                           class="SelectMenu-input form-control"
+                           aria-owns="ref-list-branches-template"
+                           data-controls-ref-menu-id="ref-list-branches-template"
+                           autofocus=""
+                           autocomplete="off"
+                           aria-label="Find a template"
+                           placeholder="Find a template"
+                           type="text"
+                           data-lpignore="true">
+                </div>
+
+                <ref-selector type="tags"
+                              data-action="
+                                  input-entered:ref-selector#inputEntered
+                                  tab-selected:ref-selector#tabSelected
+                                  focus-list:ref-selector#focusFirstListMember
+                                "
+                              data-targets="input-demux.sinks"
+                              query-endpoint="null"
+                              cache-key="{{cache-key}}"
+                              default-branch="{{default-template64}}"
+                              name-with-owner="{{name-with-owner64}}"
+                              current-committish="{{current-committish}}"
+                              prefetch-on-mouseover="">
+                    <template data-target="ref-selector.fetchFailedTemplate">
+                        <div class="SelectMenu-message" data-index="{{ index }}">Could not load templates</div>
+                    </template>
+
+                    <template data-target="ref-selector.noMatchTemplate">
+                        <div class="SelectMenu-message" data-index="{{ index }}">Nothing to show</div>
+                    </template>
+
+                    <template data-target="ref-selector.itemTemplate">
+                        <a href="#"
+                           class="SelectMenu-item"
+                           role="menuitemradio"
+                           rel="nofollow"
+                           aria-checked="{{ isCurrent }}"
+                           data-index="{{ index }}"
+                           data-ref-name="{{ refName }}"
+                           data-toggle-for="template-selector">
+                            <svg aria-hidden="true"
+                                 height="16"
+                                 viewBox="0 0 16 16"
+                                 width="16"
+                                 data-view-component="true"
+                                 class="octicon octicon-check SelectMenu-icon SelectMenu-icon--check">
+                                <path fill-rule="evenodd"
+                                      d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z"></path>
+                            </svg>
+                            <span class="flex-1 css-truncate css-truncate-overflow {{ isFilteringClass }}">{{ refName }}</span>
+                            <span hidden="{{ isNotDefault }}"
+                                  class="Label Label--secondary flex-self-start">default</span>
+                            <input name="checkbox-test" type="radio" value="{{ refName }}" checked="{{ isCurrent }}" hidden />
+                        </a>
+                    </template>
+
+                    <div data-target="ref-selector.listContainer" role="menu" class="SelectMenu-list">
+                        <div class="SelectMenu-loading pt-3 pb-0 overflow-hidden" aria-label="Menu is loading">
+                            <svg style="box-sizing: content-box; color: var(--color-icon-primary);"
+                                 width="32"
+                                 height="32"
+                                 viewBox="0 0 16 16"
+                                 fill="none"
+                                 data-view-component="true"
+                                 class="anim-rotate">
+                                <circle cx="8"
+                                        cy="8"
+                                        r="7"
+                                        stroke="currentColor"
+                                        stroke-opacity="0.25"
+                                        stroke-width="2"
+                                        vector-effect="non-scaling-stroke"></circle>
+                                <path d="M15 8a7.002 7.002 0 00-7-7"
+                                      stroke="currentColor"
+                                      stroke-width="2"
+                                      stroke-linecap="round"
+                                      vector-effect="non-scaling-stroke"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </ref-selector>
+            </input-demux>
+        </div>
+    </div>
+
+</details>
