@@ -1,13 +1,11 @@
 const url = new URL(window.location);
-const [, owner, repo] = url.pathname.split('/');
-const nameWithOwner = [owner, repo].join('/');
+const [, nameWithOwner, branch] = url.pathname.match(/\/(.+)\/compare\/(.+)/);
 const defaultTemplate = 'default';
 const project = 'pr-templates';
 const localStoragePath = `${nameWithOwner}:${project}`;
 const localStoragePathFull = `ref-selector:${localStoragePath}:tag`;
 const cacheKey = project;
 const baseURL = `https://github.com/${nameWithOwner}`;
-const branch = 'master';
 const currentCommittish = url.searchParams.get('template') || 'default';
 const templates = {};
 
@@ -23,7 +21,7 @@ const baseName = (path) => {
 };
 
 const fetchGithub = (path) => {
-    return fetch(`${baseURL}/${path}`, {credentials: 'same-origin'})
+    return fetch(`${baseURL}${path}`, {credentials: 'same-origin'})
         .then(res => res.text());
 }
 
