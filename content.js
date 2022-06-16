@@ -7,6 +7,7 @@ const localStoragePath = `${nameWithOwner}:${project}`;
 const localStoragePathFull = `ref-selector:${localStoragePath}:tag`;
 const cacheKey = project;
 const baseURL = `https://github.com/${nameWithOwner}`;
+const branch = 'master';
 const currentCommittish = url.searchParams.get('template') || 'default';
 const templates = {};
 
@@ -27,7 +28,7 @@ const fetchGithub = (path) => {
 }
 
 const fetchTemplate = (path) => {
-    return fetchGithub(`/raw/master/.github/${path}`);
+    return fetchGithub(`/raw/${branch}/.github/${path}`);
 };
 
 // business logic
@@ -50,7 +51,7 @@ const fetchDefaultTemplate = () => {
 };
 
 const fetchCustomTemplates = () => {
-    return fetchGithub(`/tree/master/.github/PULL_REQUEST_TEMPLATE`)
+    return fetchGithub(`/tree/${branch}/.github/PULL_REQUEST_TEMPLATE`)
         .then(html => {
             const regex = new RegExp(/href=".+(PULL_REQUEST_TEMPLATE\/.+\.md)"/g);
             const templateUrls = [...html.matchAll(regex)].map(match => match[1]);
