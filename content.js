@@ -70,13 +70,14 @@ const generateDropdown = (dropdownTemplate) => {
         .replace('{{default-template}}', defaultTemplate)
         .replace('{{default-template64}}', btoa(defaultTemplate))
         .replace('{{name-with-owner64}}', btoa(localStoragePath))
-        .replace('{{current-committish}}', btoa(currentCommittish))
+        .replace('{{current-committish}}', currentCommittish)
+        .replace('{{current-committish64}}', btoa(currentCommittish))
         .replace('{{cache-key}}', cacheKey);
 };
 
 const insertDropdown = (dropdown) => {
-    const tabNav = document.querySelector('#partial-discussion-sidebar');
-    tabNav.innerHTML += dropdown;
+    const sidebarContainer = document.querySelector('.discussion-sidebar-item:nth-child(2)');
+    sidebarContainer.insertAdjacentHTML('afterend', dropdown);
 };
 
 const activateDropdown = () => {
@@ -108,7 +109,7 @@ const onClick = (e) => {
 
         window.history.pushState(null, null, url);
 
-        const radio = e.target.parentElement.querySelector('input');
+        const radio = document.querySelector(`input[value="${template}"]`);
         radio.checked = true;
         radio.dispatchEvent(new CustomEvent('change', {bubbles: true}));
 
