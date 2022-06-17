@@ -75,7 +75,7 @@ const generateDropdown = (dropdownTemplate) => {
 };
 
 const insertDropdown = (dropdown) => {
-    const tabNav = document.querySelector('#partial-discussion-sidebar');
+    const tabNav = document.querySelector('.tabnav-tabs');
     tabNav.innerHTML += dropdown;
 };
 
