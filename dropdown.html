@@ -80,7 +80,11 @@
                             <span class="flex-1 css-truncate css-truncate-overflow {{ isFilteringClass }}">{{ refName }}</span>
                             <span hidden="{{ isNotDefault }}"
                                   class="Label Label--secondary flex-self-start">default</span>
-                            <input name="checkbox-test" type="radio" value="{{ refName }}" checked="{{ isCurrent }}" hidden />
+                            <input name="checkbox-test"
+                                   type="radio"
+                                   value="{{ refName }}"
+                                   checked="{{ isCurrent }}"
+                                   hidden/>
                         </a>
                     </template>
 
@@ -112,5 +116,4 @@
             </input-demux>
         </div>
     </div>
-
 </details>
