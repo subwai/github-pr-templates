@@ -76,6 +76,10 @@ const generateDropdown = (dropdownTemplate) => {
 };
 
 const insertDropdown = (dropdown) => {
+    if (document.getElementById('template-selector')) {
+        return;
+    }
+
     const sidebarContainer = document.querySelector('.discussion-sidebar-item:nth-child(2)');
     sidebarContainer.insertAdjacentHTML('afterend', dropdown);
 };
@@ -85,44 +89,75 @@ const activateDropdown = () => {
     selector.addEventListener('click', onClick, true);
 };
 
+const setPullRequestBody = (template) => {
+    const textarea = document.getElementById('pull_request_body');
+    textarea.value = templates[template];
+};
+
+const updateTemplateSelector = (template, url) => {
+    setTemplateSelectorRadio(template);
+    setTemplateSelectorState(template, url);
+    setTemplateSelectorLabel(template);
+};
+
+const setTemplateSelectorRadio = (template) => {
+    const radio = document.querySelector(`input[value="${template}"]`);
+    radio.checked = true;
+    radio.dispatchEvent(new CustomEvent('change', {bubbles: true}));
+};
+
+const setTemplateSelectorState = (template, url) => {
+    const refSelector = document.querySelector('#template-selector ref-selector');
+
+    if (template === 'default') {
+        url.searchParams.delete('template');
+        refSelector.removeAttribute('current-committish');
+    } else {
+        url.searchParams.set('template', template);
+        refSelector.setAttribute('current-committish', btoa(template));
+    }
+
+    refSelector.dispatchEvent(new CustomEvent('input-entered', {detail: ''}));
+};
+
+const setTemplateSelectorLabel = (template) => {
+    const span = document.querySelector('#template-selector summary span');
+    span.innerHTML = template;
+};
+
+const updateWindowLocation = (url) => {
+    window.history.pushState(null, null, url);
+};
+
 const onClick = (e) => {
     const item = e.target.closest('.SelectMenu-item');
     if (item) {
         const template = item.getAttribute('data-ref-name');
-
-        const span = document.querySelector('#template-selector summary span');
-        span.innerHTML = template;
-
-        const textarea = document.getElementById('pull_request_body');
-        textarea.value = templates[template];
-
         const url = new URL(window.location);
-        const refSelector = document.querySelector('#template-selector ref-selector');
 
-        if (template === 'default') {
-            url.searchParams.delete('template');
-            refSelector.removeAttribute('current-committish');
-        } else {
-            url.searchParams.set('template', template);
-            refSelector.setAttribute('current-committish', btoa(template));
-        }
-
-        window.history.pushState(null, null, url);
-
-        const radio = document.querySelector(`input[value="${template}"]`);
-        radio.checked = true;
-        radio.dispatchEvent(new CustomEvent('change', {bubbles: true}));
-
-        refSelector.dispatchEvent(new CustomEvent('input-entered', {detail: ''}));
+        setPullRequestBody(template);
+        updateTemplateSelector(template, url);
+        updateWindowLocation(url);
 
         e.preventDefault();
     }
 };
 
-Promise.resolve()
-    .then(() => loadTemplates())
-    .then(() => fetchExtensionHtml('dropdown.html'))
-    .then(generateDropdown)
-    .then(insertDropdown)
-    .then(activateDropdown)
-    .catch(console.error);
+const onLocationChange = (event) => {
+    if (!event.target.location.href.match(/https?:\/\/github\.com\/.+\/compare\/.+$/)) {
+        return;
+    }
+    if (document.getElementById('template-selector')) {
+        return;
+    }
+
+    Promise.resolve()
+        .then(() => loadTemplates())
+        .then(() => fetchExtensionHtml('dropdown.html'))
+        .then(generateDropdown)
+        .then(insertDropdown)
+        .then(activateDropdown)
+        .catch(console.error);
+};
+
+window.addEventListener('statechange', onLocationChange);
