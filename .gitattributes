@@ -1,5 +1,8 @@
-Makefile        export-ignore
-.github        export-ignore
-.gitignore     export-ignore
-.gitattributes export-ignore
-resources      export-ignore
+Makefile             export-ignore
+.github             export-ignore
+.gitignore          export-ignore
+.gitattributes      export-ignore
+resources           export-ignore
+package.json        export-ignore
+package-lock.json   export-ignore
+prettier.config.js   export-ignore
