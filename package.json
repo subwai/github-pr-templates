@@ -1,0 +1,22 @@
+{
+  "name": "github-pr-templates",
+  "version": "1.3.0",
+  "description": "https://chrome.google.com/webstore/detail/cpebkokcapgjobabnjpnnndbgbjddool",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/subwai/github-pr-templates.git"
+  },
+  "author": "https://github.com/subwai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/subwai/github-pr-templates/issues"
+  },
+  "homepage": "https://github.com/subwai/github-pr-templates#readme",
+  "main": "content.js",
+  "scripts": {
+  },
+  "dependencies": {
+    "prettier": "^2.7.1"
+  },
+  "devDependencies": {}
+}

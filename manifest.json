@@ -1,7 +1,7 @@
 {
   "name": "GitHub PR Templates",
   "description": "Easily apply GitHub PR templates when creating new pull requests in the browser.",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "manifest_version": 3,
   "content_scripts": [
     {

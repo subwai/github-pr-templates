@@ -1,163 +1,174 @@
-const url = new URL(window.location);
-const [, nameWithOwner, , branch] = url.pathname.match(/\/(.+)\/compare\/(.+\.\.\.)?(.+)/);
-const defaultTemplate = 'default';
-const project = 'pr-templates';
-const localStoragePath = `${nameWithOwner}:${project}`;
-const localStoragePathFull = `ref-selector:${localStoragePath}:tag`;
-const cacheKey = project;
-const baseURL = `https://github.com/${nameWithOwner}`;
-const currentCommittish = url.searchParams.get('template') || 'default';
-const templates = {};
-
 // utils
 const zipObject = (props, values) => {
-    return props.reduce((prev, prop, i) => {
-        return Object.assign(prev, {[prop]: values[i]});
-    }, {});
+  return props.reduce((prev, prop, i) => {
+    return Object.assign(prev, { [prop]: values[i] });
+  }, {});
 };
 
 const baseName = (path) => {
-    return String(path).substring(path.lastIndexOf('/') + 1);
+  return String(path).substring(path.lastIndexOf('/') + 1);
 };
 
-const fetchGithub = (path) => {
-    return fetch(`${baseURL}${path}`, {credentials: 'same-origin'})
-        .then(res => res.text());
-}
+class GithubRepository {
+  constructor() {
+    this.url = new URL(window.location);
+    const [, nameWithOwner, , branch] = this.url.pathname.match(/\/(.+)\/compare\/(.+\.\.\.)?(.+)/);
+    this.nameWithOwner = nameWithOwner;
+    this.branch = branch;
+    this.defaultTemplate = 'default';
+    this.project = 'pr-templates';
+    this.localStoragePath = `${this.nameWithOwner}:${this.project}`;
+    this.localStoragePathFull = `ref-selector:${this.localStoragePath}:tag`;
+    this.cacheKey = this.project;
+    this.baseURL = `https://github.com/${this.nameWithOwner}`;
+    this.currentCommittish = this.url.searchParams.get('template') || 'default';
+    this.templates = {};
+  }
 
-const fetchTemplate = (path) => {
-    return fetchGithub(`/raw/${branch}/.github/${path}`);
-};
+  attachDropdown = () => {
+    Promise.resolve()
+      .then(() => this.loadTemplates())
+      .then(() => this.fetchExtensionHtml('dropdown.html'))
+      .then(this.generateDropdown)
+      .then(this.insertDropdown)
+      .then(this.activateDropdown)
+      .catch(console.error);
+  };
 
-// business logic
-const loadTemplates = () => {
-    return Promise.all([
-        fetchDefaultTemplate(),
-        fetchCustomTemplates()
-    ])
-        .then(([defaultTemplate, customTemplates]) => {
-            templates['default'] = defaultTemplate;
-            Object.assign(templates, customTemplates);
-            const refs = Object.keys(templates);
+  loadTemplates = () => {
+    return Promise.all([this.fetchDefaultTemplate(), this.fetchCustomTemplates()]).then(
+      ([defaultTemplate, customTemplates]) => {
+        this.templates['default'] = defaultTemplate;
+        Object.assign(this.templates, customTemplates);
+        const refs = Object.keys(this.templates);
 
-            localStorage.setItem(localStoragePathFull, JSON.stringify({refs, cacheKey}));
-        });
-};
+        localStorage.setItem(
+          this.localStoragePathFull,
+          JSON.stringify({ refs, cacheKey: this.cacheKey }),
+        );
+      },
+    );
+  };
 
-const fetchDefaultTemplate = () => {
-    return fetchTemplate('pull_request_template.md');
-};
+  fetchDefaultTemplate = () => {
+    return this.fetchTemplate('pull_request_template.md');
+  };
 
-const fetchCustomTemplates = () => {
-    return fetchGithub(`/tree/${branch}/.github/PULL_REQUEST_TEMPLATE`)
-        .then(html => {
-            const regex = new RegExp(/href=".+(PULL_REQUEST_TEMPLATE\/.+\.md)"/g);
-            const templateUrls = [...html.matchAll(regex)].map(match => match[1]);
-            const templateBaseNames = templateUrls.map(baseName);
+  fetchCustomTemplates = () => {
+    return this.fetchGithub(`/tree/${this.branch}/.github/PULL_REQUEST_TEMPLATE`).then((html) => {
+      const regex = new RegExp(/href=".+(PULL_REQUEST_TEMPLATE\/.+\.md)"/g);
+      const templateUrls = [...html.matchAll(regex)].map((match) => match[1]);
+      const templateBaseNames = templateUrls.map(baseName);
 
-            return Promise.all(templateUrls.map(fetchTemplate))
-                .then(templates => zipObject(templateBaseNames, templates));
-        });
-}
+      return Promise.all(templateUrls.map(this.fetchTemplate)).then((templates) =>
+        zipObject(templateBaseNames, templates),
+      );
+    });
+  };
 
-const fetchExtensionHtml = (path) => {
-    return fetch(chrome.runtime.getURL(path))
-        .then((response) => response.text());
-}
+  fetchGithub = (path) => {
+    return fetch(`${this.baseURL}${path}`, { credentials: 'same-origin' }).then((res) =>
+      res.text(),
+    );
+  };
 
-const generateDropdown = (dropdownTemplate) => {
+  fetchTemplate = (path) => {
+    return this.fetchGithub(`/raw/${this.branch}/.github/${path}`);
+  };
+
+  fetchExtensionHtml = (path) => {
+    return fetch(chrome.runtime.getURL(path)).then((response) => response.text());
+  };
+
+  generateDropdown = (dropdownTemplate) => {
     return dropdownTemplate
-        .replace('{{default-template}}', defaultTemplate)
-        .replace('{{default-template64}}', btoa(defaultTemplate))
-        .replace('{{name-with-owner64}}', btoa(localStoragePath))
-        .replace('{{current-committish}}', currentCommittish)
-        .replace('{{current-committish64}}', btoa(currentCommittish))
-        .replace('{{cache-key}}', cacheKey);
-};
+      .replace('{{default-template}}', this.defaultTemplate)
+      .replace('{{default-template64}}', btoa(this.defaultTemplate))
+      .replace('{{name-with-owner64}}', btoa(this.localStoragePath))
+      .replace('{{current-committish}}', this.currentCommittish)
+      .replace('{{current-committish64}}', btoa(this.currentCommittish))
+      .replace('{{cache-key}}', this.cacheKey);
+  };
 
-const insertDropdown = (dropdown) => {
+  insertDropdown = (dropdown) => {
     if (document.getElementById('template-selector')) {
-        return;
+      return;
     }
 
     const sidebarContainer = document.querySelector('.discussion-sidebar-item:nth-child(2)');
     sidebarContainer.insertAdjacentHTML('afterend', dropdown);
-};
+  };
 
-const activateDropdown = () => {
+  activateDropdown = () => {
     const selector = document.querySelector('#template-selector');
-    selector.addEventListener('click', onClick, true);
-};
+    selector.addEventListener('click', this.onClick, true);
+  };
 
-const setPullRequestBody = (template) => {
+  setPullRequestBody = (template) => {
     const textarea = document.getElementById('pull_request_body');
-    textarea.value = templates[template];
-};
+    textarea.value = this.templates[template];
+  };
 
-const updateTemplateSelector = (template, url) => {
-    setTemplateSelectorRadio(template);
-    setTemplateSelectorState(template, url);
-    setTemplateSelectorLabel(template);
-};
+  updateTemplateSelector = (template, url) => {
+    this.setTemplateSelectorRadio(template);
+    this.setTemplateSelectorState(template, url);
+    this.setTemplateSelectorLabel(template);
+  };
 
-const setTemplateSelectorRadio = (template) => {
+  setTemplateSelectorRadio = (template) => {
     const radio = document.querySelector(`input[value="${template}"]`);
     radio.checked = true;
-    radio.dispatchEvent(new CustomEvent('change', {bubbles: true}));
-};
+    radio.dispatchEvent(new CustomEvent('change', { bubbles: true }));
+  };
 
-const setTemplateSelectorState = (template, url) => {
+  setTemplateSelectorState = (template, url) => {
     const refSelector = document.querySelector('#template-selector ref-selector');
 
     if (template === 'default') {
-        url.searchParams.delete('template');
-        refSelector.removeAttribute('current-committish');
+      url.searchParams.delete('template');
+      refSelector.removeAttribute('current-committish');
     } else {
-        url.searchParams.set('template', template);
-        refSelector.setAttribute('current-committish', btoa(template));
+      url.searchParams.set('template', template);
+      refSelector.setAttribute('current-committish', btoa(template));
     }
 
-    refSelector.dispatchEvent(new CustomEvent('input-entered', {detail: ''}));
-};
+    refSelector.dispatchEvent(new CustomEvent('input-entered', { detail: '' }));
+  };
 
-const setTemplateSelectorLabel = (template) => {
+  setTemplateSelectorLabel = (template) => {
     const span = document.querySelector('#template-selector summary span');
     span.innerHTML = template;
-};
+  };
 
-const updateWindowLocation = (url) => {
+  updateWindowLocation = (url) => {
     window.history.pushState(null, null, url);
-};
+  };
 
-const onClick = (e) => {
+  onClick = (e) => {
     const item = e.target.closest('.SelectMenu-item');
     if (item) {
-        const template = item.getAttribute('data-ref-name');
-        const url = new URL(window.location);
+      const template = item.getAttribute('data-ref-name');
+      const url = new URL(window.location);
 
-        setPullRequestBody(template);
-        updateTemplateSelector(template, url);
-        updateWindowLocation(url);
+      this.setPullRequestBody(template);
+      this.updateTemplateSelector(template, url);
+      this.updateWindowLocation(url);
 
-        e.preventDefault();
+      e.preventDefault();
     }
-};
+  };
+}
 
 const onLocationChange = (event) => {
-    if (!event.target.location.href.match(/https?:\/\/github\.com\/.+\/compare\/.+$/)) {
-        return;
-    }
-    if (document.getElementById('template-selector')) {
-        return;
-    }
+  if (!event.target.location.href.match(/https?:\/\/github\.com\/.+\/compare\/.+$/)) {
+    return;
+  }
+  if (document.getElementById('template-selector')) {
+    return;
+  }
 
-    Promise.resolve()
-        .then(() => loadTemplates())
-        .then(() => fetchExtensionHtml('dropdown.html'))
-        .then(generateDropdown)
-        .then(insertDropdown)
-        .then(activateDropdown)
-        .catch(console.error);
+  const repository = new GithubRepository();
+  repository.attachDropdown();
 };
 
 window.addEventListener('statechange', onLocationChange);
